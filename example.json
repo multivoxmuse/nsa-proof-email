@@ -1,0 +1,13 @@
+{
+  "postfix" : {
+		"domain_name" : "",
+		"hostname" : "",
+		"ssl" : {
+			"cert_path" : "",
+			"key_path" : ""
+		},
+		"config" : {
+		  "smtp_tls_loglevel" : 2
+		}
+	}
+}
