@@ -1,5 +1,7 @@
 
-opts = node['mysql']
+# Install mysql and create the users
+
+opts = node['mailserver']
 create_tables = [
   "GRANT #{opts['grant_level']} ON #{opts['grant_tables']} TO '#{opts['mailuser']['name']}'@'#{opts['grant_host']}' IDENTIFIED BY '#{opts['mailuser']['password']}'",
   "FLUSH PRIVILEGES",
@@ -9,11 +11,11 @@ create_tables = [
 ]
 
 execute 'create db' do 
-  command "mysql -e 'CREATE #{node['mysql']['database_name']} IF NOT EXISTS'"
+  command "mysql -e 'CREATE DATABASE #{node['mailserver']['database_name']} IF NOT EXISTS'"
 end
 
 create_tables.each do |query|
-  bash 'create table if it does not exist in mysql'
+  bash 'create table if it does not exist in mysql' do
     code <<-EOH
       mysql -e "#{query}"
       EOH
@@ -23,7 +25,7 @@ end
 opts['virtual_domains'].each do |domain|
   bash 'insert domains' do
     code <<-EOH
-      mysql -e "INSERT INTO `#{node['mysql']['database_name']}`.`virtual_domains` (`name`) VALUES ('#{domain}')"
+      mysql -e "INSERT INTO `#{node['mailserver']['database_name']}`.`virtual_domains` (`name`) VALUES ('#{domain}')"
       EOH
   end
 end
@@ -31,8 +33,8 @@ end
 opts['virtual_users'].each do |user|
   bash 'insert users' do
     code <<-EOH
-      DOMAINID=$(mysql -e "SELECT id FROM #{node['mysql']['database_name']}.virtual_domains WHERE name = '#{user['domain'}'"
-      mysql -e "INSERT INTO `#{node['mysql']['database_name']}`.`virtual_users` (`domain_id`, `password` , `email`) VALUES ('$DOMAINID', '#{user['password'}', '#{user['email']}')"
+      DOMAINID=$(mysql -e "SELECT id FROM #{node['mailserver']['database_name']}.virtual_domains WHERE name = '#{user['domain']}'"
+      mysql -e "INSERT INTO `#{node['mailserver']['database_name']}`.`virtual_users` (`domain_id`, `password` , `email`) VALUES ('$DOMAINID', '#{user['password']}', '#{user['email']}')"
       EOH
   end
 end

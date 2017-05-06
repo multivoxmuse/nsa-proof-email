@@ -8,4 +8,11 @@ default['mailserver']['packages'] = [
 	"mysql-server", 
 	"dovecot-lmtpd"
 ]
-mysql/attributes/default.rb
+default['mailserver']['database_name'] = 'mailserver'
+default['mailserver']['mailuser'] = {
+  "name" => "mailuser",
+  "grant_level" => "SELECT",
+  "grant_tables" => "mailserver.*",
+  "grant_host" => "127.0.0.1"
+}
+
