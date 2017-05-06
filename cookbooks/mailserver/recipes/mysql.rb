@@ -25,8 +25,8 @@ end
 opts['virtual_domains'].each do |domain|
   bash 'insert domains' do
     code <<-EOH
-      d_id=$(mysql -Ne "SELECT id FROM #{node['mailserver']['database_name']}.virtual_domains WHERE name = '#{domain}'")
-      if ! [[ "$d_id" =~ '^[0-9]+$' ]]; then
+      d_ids=$(mysql -Ne "SELECT id FROM #{node['mailserver']['database_name']}.virtual_domains WHERE name = '#{domain}'")
+      if ! [ -n "$d_ids" ]; then
         mysql -e "INSERT INTO #{node['mailserver']['database_name']}.virtual_domains (name) VALUES ('#{domain}')"
       fi
       EOH
@@ -38,7 +38,7 @@ opts['virtual_users'].each do |user|
     code <<-EOH
       DOMAINIDS=$(mysql -Ne "SELECT id FROM #{node['mailserver']['database_name']}.virtual_domains WHERE name = '#{user['domain']}'")
       for d_id in $DOMAINIDS
-        do mysql -e "INSERT INTO #{node['mailserver']['database_name']}.virtual_users (domain_id, password , email) VALUES ('$d_id', '#{user['password']}', '#{user['email']}')"
+        do mysql -e "INSERT IGNORE INTO #{node['mailserver']['database_name']}.virtual_users (domain_id, password , email) VALUES ('$d_id', '#{user['password']}', '#{user['email']}')"
       done
       EOH
   end
